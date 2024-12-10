@@ -1,3 +1,5 @@
+from re import search
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -30,7 +32,7 @@ def get_posts():
             return jsonify(new_post), 201
         else:
             return jsonify({"error": "Missing JSON"}), 400
-    return jsonify(POSTS)
+    return jsonify(POSTS), 200
 
 
 @app.route('/api/posts/<id>', methods=['DELETE', 'PUT'])
@@ -49,10 +51,29 @@ def delete_post(id: str):
     return jsonify({"error": f"No post with the id {id} found."}), 404
 
 
+@app.route('/api/posts/search', methods=['GET'])
+def search_for_post():   # you get query parameters!!!
+    search_title = request.args.get('title')
+    search_content = request.args.get('content')
+    filtered_posts = []
+    if search_title:
+        filtered_titles = [post for post in POSTS if search_title in post['title']]
+    else:
+        filtered_titles = []
+    if search_content:
+        filtered_contents = [post for post in POSTS if search_content in post['content']]
+    else:
+        filtered_contents = []
+    for post in filtered_titles:
+        if post not in filtered_posts:
+            filtered_posts.append(post)
+    for post in filtered_contents:
+        if post not in filtered_posts:
+            filtered_posts.append(post)
+    return jsonify(filtered_posts), 200
 
 
-                #frontend_data = request.get_json()
-                #if frontend_data is not None:
+
 
 
 
