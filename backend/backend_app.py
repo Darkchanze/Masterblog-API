@@ -14,7 +14,7 @@ POSTS = [
 def get_posts():
     if request.method == 'POST':
         frontend_data = request.get_json()
-        if frontend_data is not None:
+        if frontend_data:
             missing_info = []
             if 'title' not in frontend_data:
                 missing_info.append('title')
@@ -33,13 +33,26 @@ def get_posts():
     return jsonify(POSTS)
 
 
-@app.route('/api/posts/<id>', methods=['DELETE'])
+@app.route('/api/posts/<id>', methods=['DELETE', 'PUT'])
 def delete_post(id: str):
     for post in POSTS:
         if post['id'] == int(id):
-            POSTS.remove(post)
-            return jsonify({"message": f"Post with id {id} has been deleted successfully."}), 200
+            if request.method == 'DELETE':
+                POSTS.remove(post)
+                return jsonify({"message": f"Post with id {id} has been deleted successfully."}), 200
+            if request.method == 'PUT':
+                frontend_data = request.get_json()
+                if frontend_data:
+                    post['title'] = frontend_data.get('title', post['title'])
+                    post['content'] = frontend_data.get('content', post['content'])
+                    return jsonify(post), 200
     return jsonify({"error": f"No post with the id {id} found."}), 404
+
+
+
+
+                #frontend_data = request.get_json()
+                #if frontend_data is not None:
 
 
 
